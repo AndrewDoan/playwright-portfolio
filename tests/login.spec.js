@@ -1,26 +1,27 @@
 const { test, expect } = require('@playwright/test');
+const { LoginPage } = require('../pages/LoginPage');
 
 test.describe('Login Page', () => {
 
-    test('should login with valid credentials', async ({ page }) => {
-        await page.goto('https://www.saucedemo.com');
-        await page.fill('#user-name', 'standard_user');
-        await page.fill('#password', 'secret_sauce');
-        await page.click('#login-button');
-        await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
-    });
+  test('should login with valid credentials', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('standard_user', 'secret_sauce');
+    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
+  });
 
-    test('should show error with invalid credentials', async ({ page }) => {
-        await page.goto('https://www.saucedemo.com');
-        await page.fill('#user-name', 'wrong_user');
-        await page.fill('#password', 'wrong_password');
-        await page.click('#login-button');
-        await expect(page.locator('.error-message-container')).toBeVisible();
-    })
+  test('should show error with invalid credentials', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await loginPage.login('wrong_user', 'wrong_password');
+    await expect(await loginPage.getErrorMessage()).toBeVisible();
+  });
 
-    test('should show error when fields are empty', async ({ page }) => {
-        await page.goto('https://www.saucedemo.com');
-        await page.click('#login-button');
-        await expect(page.locator('.error-message-container')).toBeVisible();
-    });
-})
+  test('should show error when fields are empty', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.goto();
+    await page.click('#login-button');
+    await expect(await loginPage.getErrorMessage()).toBeVisible();
+  });
+
+});
