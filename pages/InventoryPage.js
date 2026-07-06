@@ -1,7 +1,7 @@
 class InventoryPage {
     constructor(page) {
         this.page = page;
-        this addBackpackButton = '[data-test="add-to-cart-sauce-labs-backpack"]';
+        this.addBackpackButton = '[data-test="add-to-cart-sauce-labs-backpack"]';
         this.cartBadge = '.shopping_cart_badge';
         this.cartLink = '.shopping_cart_link';
         this.sortDropdown = '[data-test="product-sort-container"]';

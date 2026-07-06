@@ -1,29 +1,36 @@
 const { test, expect } = require('@playwright/test');
+const { LoginPage } = require('../pages/LoginPage');
+const { InventoryPage } = require('../pages/InventoryPage');
+const { CartPage } = require('../pages/CartPage');
+const { CheckoutPage } = require('../pages/CheckoutPage');
 
 test.describe('Checkout Flow', () => {
 
-    test.beforeEach(async ({ page }) => {
-        await page.goto('https://www.saucedemo.com');
-        await page.fill('#user-name', 'standard_user');
-        await page.fill('#password', 'secret_sauce');
-        await page.click('#login-button');
-        await page.click('[data-test="add-to-cart-sauce-labs-backpack"]');
-        await page.click('.shopping_cart_link');
+    test.beforeEach(async({ page }) => {
+        const loginPage = new LoginPage(page);
+        await loginPage.goto();
+        await loginPage.login('standard_user', 'secret_sauce');
+        const inventoryPage = new InventoryPage(page);
+        await inventoryPage.addItemToCart();
+        await inventoryPage.goToCart();
     });
 
     test('should complete full checkout', async ({ page }) => {
-        await page.click('[data-test="checkout"]');
-        await page.fill('[data-test="firstName"]', 'Andrew');
-        await page.fill('[data-test="lastName"]', 'Doan');
-        await page.fill('[data-test="postalCode"]', '95051');
-        await page.click('[data-test="continue"]');
-        await page.click('[data-test="finish"]');
-        await expect(page.locator('.complete-header')).toHaveText('Thank you for your order!');
+        const cartPage = new CartPage(page);
+        const checkoutPage = new CheckoutPage(page);
+        await cartPage.checkout();
+        await checkoutPage.fillInfo('Andrew', 'Doan', '95051');
+        await checkoutPage.continue();
+        await checkoutPage.finish();
+        await expect(await checkoutPage.getConfirmation()).toHaveText('Thank you for your order!');
     });
 
     test('should show error when checkout fields are empty', async ({ page }) => {
-        await page.click('[data-test="checkout"]');
-        await page.click('[data-test="continue"]');
-        await expect(page.locator('.error-message-container')).toBeVisible();
+        const cartPage = new CartPage(page);
+        const checkoutPage = new CheckoutPage(page);
+        await cartPage.checkout();
+        await checkoutPage.continue();
+        await expect(await checkoutPage.getErrorMessage()).toBeVisible();
     });
-})
+
+});
